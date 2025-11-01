@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kantakt Tarmoq Tizimi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .switch-form a {
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .dashboard {
+            text-align: center;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div id="loginForm">
+            <h2>Kirish</h2>
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="loginUsername">Login:</label>
+                    <input type="text" id="loginUsername" placeholder="Loginingizni kiriting" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Parol:</label>
+                    <input type="password" id="loginPassword" placeholder="Parolingizni kiriting" required>
+                </div>
+                <button type="submit">Kirish</button>
+            </form>
+            <div class="switch-form">
+                Akkauntingiz yo'qmi? <a onclick="showRegister()">Ro'yxatdan o'ting</a>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="hidden">
+            <h2>Ro'yxatdan o'tish</h2>
+            <form id="registerFormElement">
+                <div class="form-group">
+                    <label for="regUsername">Yangi Login:</label>
+                    <input type="text" id="regUsername" placeholder="Yangi login yarating" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Yangi Parol:</label>
+                    <input type="password" id="regPassword" placeholder="Yangi parol yarating" required>
+                </div>
+                <div class="form-group">
+                    <label for="regFullName">Ism Familiya:</label>
+                    <input type="text" id="regFullName" placeholder="Ism familiyangizni kiriting" required>
+                </div>
+                <button type="submit">Ro'yxatdan o'tish</button>
+            </form>
+            <div class="switch-form">
+                Akkauntingiz bormi? <a onclick="showLogin()">Kirish</a>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden">
+            <div class="dashboard">
+                <h2>Xush kelibsiz!</h2>
+                <div class="user-info">
+                    <h3 id="welcomeMessage"></h3>
+                    <p>Kantakt tarmoq tizimiga muvaffaqiyatli kirdingiz</p>
+                </div>
+                <button onclick="logout()" class="logout-btn">Chiqish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Foydalanuvchilar ma'lumotlari (oddiy localStorage da saqlanadi)
+        let users = JSON.parse(localStorage.getItem('kantaktUsers')) || [];
+
+        // Form elementlari
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const dashboard = document.getElementById('dashboard');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+
+        // Login formasi
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Foydalanuvchini tekshirish
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                // Muvaffaqiyatli kirish
+                showDashboard(user);
+            } else {
+                alert('Noto‘g‘ri login yoki parol!');
+            }
+        });
+
+        // Ro'yxatdan o'tish formasi
+        document.getElementById('registerFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const fullName = document.getElementById('regFullName').value;
+
+            // Foydalanuvchi allaqachon mavjudligini tekshirish
+            if (users.find(u => u.username === username)) {
+                alert('Bu login allaqachon band!');
+                return;
+            }
+
+            // Yangi foydalanuvchi qo'shish
+            const newUser = {
+                username: username,
+                password: password,
+                fullName: fullName,
+                registrationDate: new Date().toLocaleDateString()
+            };
+
+            users.push(newUser);
+            localStorage.setItem('kantaktUsers', JSON.stringify(users));
+            
+            alert('Muvaffaqiyatli roʻyxatdan oʻtdingiz! Endi kirishingiz mumkin.');
+            showLogin();
+        });
+
+        // Formlarni ko'rsatish funksiyalari
+        function showLogin() {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            dashboard.classList.add('hidden');
+            
+            // Formalarni tozalash
+            document.getElementById('loginFormElement').reset();
+            document.getElementById('registerFormElement').reset();
+        }
+
+        function showRegister() {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            dashboard.classList.add('hidden');
+        }
+
+        function showDashboard(user) {
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            
+            welcomeMessage.textContent = `Xush kelibsiz, ${user.fullName}!`;
+        }
+
+        function logout() {
+            showLogin();
+        }
+
+        // Dastur yuklanganda login formani ko'rsatish
+        showLogin();
+    </script>
+</body>
+</html>
